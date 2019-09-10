@@ -1,6 +1,8 @@
 Azure Active Directory Bulk Import Script  
 Version 0.1
 
+Place this script and the CSV file you want to import in the same directory. When you run the script it will ask for the name of the file. Please format the CSV with the correct attribute names for an Azure AD user, there is no attribute mapping in this script.
+
 --Required Attributes--:  
 DisplayName  
 Password  
