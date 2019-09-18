@@ -1,6 +1,6 @@
 <#
 Azure Active Directory Bulk Import Script
-Version 0.2
+Version 0.3
 
 --Features--
 Automatically formats PasswordProfile and OtherMails attributes
@@ -19,6 +19,14 @@ UserPrincipalName
 This currently script only supports OtherMails separated by comma.
 e.g 'user1@contoso.com, user2@contoso.com, etc'
 
+Version 0.3
+-Now accepts the following parameters in command line:
+    -getCredentials (bool)
+    -startingRow (integer)
+    -$rowsToProcess $false || integer
+    -$updateRows (bool)
+    -file (string)
+
 Version 0.2
 -Script can now update users currently in Azure AD
 -Does not update passwords of current users.
@@ -28,23 +36,35 @@ Version 0.2
 -Can decline to update current users
 
 Version 0.1
-Very early version of the script for use with specific client. Can be used as a framework to include whatever fields you need. You can add additional attributes below in the specified section. If you don't know powershell well, wouldn't recommend editing anything else.
+Very early version of the script for use with specific case. Can be used as a framework to include whatever fields you need. You can add additional attributes below in the specified section. If you don't know powershell well, wouldn't recommend editing anything else.
 #>
 
-#$Credential = Get-Credential
-#Connect-AzureAD -Credential $Credential
+param(
+    [bool]$getCredentials = $false,
+    [int]$startingRow = 2,
+    [int]$rowsToProcess = $false,
+    [bool]$updateRows = $false,
+    [string]$file = $(Read-Host 'Input CSV file')
+)
+
+if($getCredentials -eq $true){
+
+    $Credential = Get-Credential
+    Connect-AzureAD -Credential $Credential
+
+}
 
 #Requests name of CSV file and imports
-$file = Read-Host 'Input CSV file'
 $users = Import-Csv -Path .\$file
 
-$rowStart = if(($rowinput = Read-Host "Enter starting row (Default: 2)") -eq '') {2} else {[int]$rowinput}
+#$rowStart = if(($rowinput = Read-Host "Enter starting row (Default: 2)") -eq '') {2} else {[int]$rowinput}
+$rowStart = $startingRow
 
 $processrows = $users | Measure-Object
 $processrows = $processrows.Count
-$processrows = if(($result = Read-Host "Enter # of rows to process (Current: $processrows)") -eq '') {$processrows} else {$result}
+$processrows = if($rowsToProcess -eq $false) {$processrows} else {$rowsToProcess}
 
-$updateCurrent = if((Read-Host "Update current users y/n (Default: Y)") -eq 'n') { $false } else { $true }
+$updateCurrent = $updateRows
 
 #Sets required fields
 $required = "DisplayName","AccountEnabled","MailNickName","UserPrincipalName"
